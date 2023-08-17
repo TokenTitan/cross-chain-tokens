@@ -9,16 +9,15 @@ contract CrossCoinTest is Test {
 
     function setUp() public {
         crossCoin = new CrossCoin();
-        crossCoin.setNumber(0);
     }
 
-    function testIncrement() public {
-        crossCoin.increment();
-        assertEq(crossCoin.number(), 1);
-    }
+    // function testIncrement() public {
+    //     crossCoin.increment();
+    //     assertEq(crossCoin.number(), 1);
+    // }
 
-    function testSetNumber(uint256 x) public {
-        crossCoin.setNumber(x);
-        assertEq(crossCoin.number(), x);
-    }
+    // function testSetNumber(uint256 x) public {
+    //     crossCoin.setNumber(x);
+    //     assertEq(crossCoin.number(), x);
+    // }
 }
