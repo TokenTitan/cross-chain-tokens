@@ -11,12 +11,12 @@ contract CrossCoin is ERC20Upgradeable, LayerZeroBase {
         string memory _name,
         string memory _symbol,
         address _lzEndpoint,
-        bytes memory targetChainData
+        uint16[2] memory dstChainIds
     ) external initializer (
     ) {
         __Ownable_init();
         __ERC20_init(_name, _symbol);
-        __layerZeroInit(_lzEndpoint, targetChainData);
+        __layerZeroInit(_lzEndpoint, dstChainIds);
     }
 
     function _lzReceive(

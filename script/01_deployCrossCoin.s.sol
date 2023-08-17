@@ -82,9 +82,6 @@ contract CrossCoinScript is Script {
                 string.concat("CHAIN_ID_", targetChain2)
             ));
 
-            // bytes memory targetChainData = abi.encodePacked([chainId1, chainId2]);
-            bytes memory targetChainData = abi.encode(chainId1, chainId2);
-
             proxyAddr = address(
                 new TransparentUpgradeableProxy(
                     implementationAddr,
@@ -94,7 +91,7 @@ contract CrossCoinScript is Script {
                         "CrossCoin",
                         "CC",
                         lzEndpointAddr,
-                        targetChainData
+                        [chainId1, chainId2]
                     )
                 )
             );

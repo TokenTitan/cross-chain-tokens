@@ -23,29 +23,19 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
     /**
      * @dev Sets the values for {lzEndpoint} and {dstChainIds}.
      * @param lzEndpoint layer zero endpoint on this chain
-     * @param targetChainData destination chain ids
+     * @param dstChainIds destination chain ids
      */
     function __layerZeroInit(
         address lzEndpoint,
-        bytes memory targetChainData
+        uint16[2] memory dstChainIds
     ) internal initializer (
     ) {
         _lzEndpoint = ILayerZeroEndpointUpgradeable(lzEndpoint);
-        // uint256[] memory dstChainIds = abi.decode(
-        //     targetChainData,
-        //     (uint256[])
-        // );
-        // uint256 noOfChains = dstChainIds.length;
+        uint256 noOfChains = dstChainIds.length;
 
-        // for(uint256 _index = 0; _index < noOfChains; _index++) {
-        //     _dstChainIds[_index] = dstChainIds[_index]; // TODO: should use bitwise 
-        // }
-
-        (uint16 chainId1, uint16 chainId2) = abi.decode(targetChainData, (uint16, uint16));
-
-        //TODO fix encode and decode for using array
-        _dstChainIds[0] = chainId1;
-        _dstChainIds[1] = chainId2;
+        for(uint256 _index = 0; _index < noOfChains; _index++) {
+            _dstChainIds[_index] = dstChainIds[_index]; // TODO: can try a more optimal way
+        }
     }
 
     /**
