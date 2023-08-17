@@ -3,6 +3,7 @@ pragma solidity 0.8.13;
 
 import { ERC20Upgradeable } from "./helper/ERC20Upgradeable.sol";
 import { LayerZeroBase } from "./helper/LayerZeroBase.sol";
+import "forge-std/console.sol";
 
 contract CrossCoin is ERC20Upgradeable, LayerZeroBase {
     error InvalidEvent();
@@ -19,12 +20,7 @@ contract CrossCoin is ERC20Upgradeable, LayerZeroBase {
         __layerZeroInit(_lzEndpoint, dstChainIds);
     }
 
-    function _lzReceive(
-        uint16 /* _srcChainId */,
-        bytes memory /* _srcAddress */,
-        uint64 /* _nonce */,
-        bytes memory _payload
-    ) internal override {
+    function _processRecieve(bytes memory _payload) internal override {
         (address _from, address _to, uint256 _amount) = abi.decode(_payload, (address, address, uint256));
         if (_from == address(0)) {
             _totalSupply = _totalSupply + _amount;

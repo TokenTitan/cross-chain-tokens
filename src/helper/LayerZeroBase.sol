@@ -2,7 +2,6 @@
 pragma solidity 0.8.13;
 
 // Package Imports
-import { Initializable } from "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 import { OwnableUpgradeable } from "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 // Interfaces
@@ -12,7 +11,7 @@ import { ILayerZeroEndpointUpgradeable } from "../interfaces/ILayerZeroEndpointU
 abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgradeable {
     uint256 constant public DEFAULT_PAYLOAD_SIZE_LIMIT = 10000;
 
-    ILayerZeroEndpointUpgradeable internal _lzEndpoint;
+    ILayerZeroEndpointUpgradeable public _lzEndpoint;
     uint16[2] internal _dstChainIds;
 
     mapping(uint16 => bytes) public trustedRemoteLookup;
@@ -52,8 +51,7 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
         bytes memory trustedRemote = trustedRemoteLookup[_srcChainId];
         // if will still block the message pathway from (srcChainId, srcAddress). should not receive message from untrusted remote.
         require(_srcAddress.length == trustedRemote.length && trustedRemote.length > 0 && keccak256(_srcAddress) == keccak256(trustedRemote), "LzApp: invalid source sending contract");
-
-        _lzReceive(_srcChainId, _srcAddress, _nonce, _payload);
+        _processRecieve(_payload);
     }
 
     /**
@@ -78,12 +76,9 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
 
     /**
      * @dev abstract function for the importing contract to implement functionality accordingly
-     * @param _srcChainId id of the source chain
-     * @param _srcAddress address of the source chain contract
-     * @param _nonce of the transaction
      * @param _payload message added to the source transaction
      */
-    function _lzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual;
+    function _processRecieve(bytes memory _payload) internal virtual;
 
     /**
     // @notice send a LayerZero message to the specified address at a LayerZero endpoint.
