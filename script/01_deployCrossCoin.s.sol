@@ -9,35 +9,21 @@ import { TransparentUpgradeableProxy } from "openzeppelin-contracts/contracts/pr
 
 contract CrossCoinScript is Script {
     string private deploymentNetwork;
+
     address private proxyAdminAddr;
     address private proxyAddr;
+    address private lzEndpointAddr;
+
+    uint16 private chainId1;
+    uint16 private chainId2;
+
     bool private forTest;
 
     function run() public {
         console.log("Deploying Cross Coin");
 
-        if (forTest) {
-            address implementationAddr = address(new CrossCoin());
-
-            console.log(
-                "Implementation contract deployed at",
-                implementationAddr
-            );
-
-            proxyAddr = address(
-                new TransparentUpgradeableProxy(
-                    implementationAddr,
-                    proxyAdminAddr,
-                    abi.encodeWithSelector(
-                        CrossCoin(address(0)).initialize.selector
-                    )
-                )
-            );
-            console.log(
-                "Cross Chain proxy deployed at",
-                proxyAddr
-            );
-        } else {
+        // take values from the env if it is not a test environment
+        if (!forTest) {
             deploymentNetwork = vm.envString(
                 "DEPLOYMENT_NETWORK"
             );
@@ -59,56 +45,77 @@ contract CrossCoinScript is Script {
                 string.concat("PROXY_ADMIN_ADDR_", deploymentNetwork)
             );
 
-            vm.startBroadcast();
-            address implementationAddr = address(new CrossCoin());
-
-            console.log(
-                "Implementation contract deployed at",
-                implementationAddr
-            );
-
             string memory targetChain1 = vm.envString(string.concat("TARGET_CHAIN_1"));
             string memory targetChain2 = vm.envString(string.concat("TARGET_CHAIN_2"));
 
-            address lzEndpointAddr = vm.envAddress(
+            lzEndpointAddr = vm.envAddress(
                 string.concat("LZ_ENDPOINT_", deploymentNetwork)
             );
 
-            uint16 chainId1 = uint16(vm.envUint(
+            chainId1 = uint16(vm.envUint(
                 string.concat("CHAIN_ID_", targetChain1)
             ));
 
-            uint16 chainId2 = uint16(vm.envUint(
+            chainId2 = uint16(vm.envUint(
                 string.concat("CHAIN_ID_", targetChain2)
             ));
-
-            proxyAddr = address(
-                new TransparentUpgradeableProxy(
-                    implementationAddr,
-                    proxyAdminAddr,
-                    abi.encodeWithSelector(
-                        CrossCoin(address(0)).initialize.selector,
-                        "CrossCoin",
-                        "CC",
-                        lzEndpointAddr,
-                        [chainId1, chainId2]
-                    )
-                )
-            );
-            console.log(
-                "Cross Chain proxy deployed at",
-                proxyAddr
-            );
         }
+
+        vm.startBroadcast();
+
+        // deploy implementation contract
+        address implementationAddr = address(new CrossCoin());
+
+        console.log(
+            "Implementation contract deployed at",
+            implementationAddr
+        );
+
+        // deploy proxy contract
+        proxyAddr = address(
+            new TransparentUpgradeableProxy(
+                implementationAddr,
+                proxyAdminAddr,
+                abi.encodeWithSelector(
+                    CrossCoin(address(0)).initialize.selector,
+                    "CrossCoin",
+                    "CC",
+                    lzEndpointAddr,
+                    [chainId1, chainId2]
+                )
+            )
+        );
+
+        console.log(
+            "Cross Chain proxy deployed at",
+            proxyAddr
+        );
+        CrossCoin(proxyAddr).transferOwnership(msg.sender);
+        vm.stopBroadcast();
     }
 
     function deployForTest(
-        address proxyAdmin
+        address _proxyAdmin,
+        address _lzEndpointAddr,
+        uint16 _chainId1,
+        uint16 _chainId2
     ) public returns (address) {
+        // set state parameters for test deployment
         forTest = true;
-        proxyAdminAddr = proxyAdmin;
+        proxyAdminAddr = _proxyAdmin;
+        lzEndpointAddr = _lzEndpointAddr;
+        chainId1 = _chainId1;
+        chainId1 = _chainId2;
+
         run();
+
+        // reset state values
         forTest = false;
+        proxyAdminAddr = address(0);
+        lzEndpointAddr = address(0);
+        chainId1 = 0;
+        chainId1 = 0;
+
         return proxyAddr;
     }
 }
