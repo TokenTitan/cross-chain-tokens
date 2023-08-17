@@ -13,7 +13,7 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
     uint256 constant public DEFAULT_PAYLOAD_SIZE_LIMIT = 10000;
 
     ILayerZeroEndpointUpgradeable internal _lzEndpoint;
-    uint256[] internal _dstChainIds;
+    uint256[2] internal _dstChainIds;
 
     mapping(uint256 => bytes) public trustedRemoteLookup;
     mapping(uint256 => uint256) public payloadSizeLimitLookup;
@@ -21,19 +21,29 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
     /**
      * @dev Sets the values for {lzEndpoint} and {dstChainIds}.
      * @param lzEndpoint layer zero endpoint on this chain
-     * @param dstChainIds destination chain ids
+     * @param targetChainData destination chain ids
      */
     function __layerZeroInit(
         address lzEndpoint,
-        uint256[] memory dstChainIds
+        bytes memory targetChainData
     ) internal initializer (
     ) {
         _lzEndpoint = ILayerZeroEndpointUpgradeable(lzEndpoint);
-        uint256 noOfChains = dstChainIds.length;
+        // uint256[] memory dstChainIds = abi.decode(
+        //     targetChainData,
+        //     (uint256[])
+        // );
+        // uint256 noOfChains = dstChainIds.length;
 
-        for(uint256 _index = 0; _index < noOfChains; _index++) {
-            _dstChainIds[_index] = dstChainIds[_index]; // TODO: should use bitwise 
-        }
+        // for(uint256 _index = 0; _index < noOfChains; _index++) {
+        //     _dstChainIds[_index] = dstChainIds[_index]; // TODO: should use bitwise 
+        // }
+
+        (uint256 chainId1, uint256 chainId2) = abi.decode(targetChainData, (uint256, uint256));
+
+        //TODO fix encode and decode for using array
+        _dstChainIds[0] = chainId1;
+        _dstChainIds[1] = chainId2;
     }
 
     /**
@@ -83,7 +93,7 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
      */
     function _lzSend(bytes memory _payload, address payable _refundAddress, address _zroPaymentAddress, bytes memory _adapterParams, uint _nativeFee) internal virtual {
         uint256 noOfChains = _dstChainIds.length;
-        uint256[] memory dstChainIds = _dstChainIds;
+        uint256[2] memory dstChainIds = _dstChainIds;
         for(uint256 _index = 0; _index < noOfChains; _index++) {
             bytes memory trustedRemote = trustedRemoteLookup[dstChainIds[_index]];
             require(trustedRemote.length != 0, "LzApp: destination chain is not a trusted source");

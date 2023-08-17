@@ -37,6 +37,20 @@ contract CrossCoinScript is Script {
             deploymentNetwork = vm.envString(
                 "DEPLOYMENT_NETWORK"
             );
+
+            if (bytes(deploymentNetwork).length == 0) {
+                revert("Deployment network is not set in .env file");
+            }
+            if (
+                bytes(
+                    vm.envString(
+                        string.concat("PROXY_ADMIN_ADDR_", deploymentNetwork)
+                    )
+                ).length == 0
+            ) {
+                revert("ProxyAdmin address is not set in .env file");
+            }
+
             proxyAdminAddr = vm.envAddress(
                 string.concat("PROXY_ADMIN_ADDR_", deploymentNetwork)
             );
@@ -49,18 +63,38 @@ contract CrossCoinScript is Script {
                 implementationAddr
             );
 
+            string memory targetChain1 = vm.envString(string.concat("TARGET_CHAIN_1"));
+            string memory targetChain2 = vm.envString(string.concat("TARGET_CHAIN_2"));
+
+            address lzEndpointAddr = vm.envAddress(
+                string.concat("LZ_ENDPOINT_", deploymentNetwork)
+            );
+
+            uint256 chainId1 = vm.envUint(
+                string.concat("CHAIN_ID_", targetChain1)
+            );
+
+            uint256 chainId2 = vm.envUint(
+                string.concat("CHAIN_ID_", targetChain2)
+            );
+
+            // bytes memory targetChainData = abi.encodePacked([chainId1, chainId2]);
+            bytes memory targetChainData = abi.encode(chainId1, chainId2);
 
             proxyAddr = address(
                 new TransparentUpgradeableProxy(
                     implementationAddr,
                     proxyAdminAddr,
                     abi.encodeWithSelector(
-                        CrossCoin(address(0)).initialize.selector
+                        CrossCoin(address(0)).initialize.selector,
+                        "CrossCoin",
+                        "CC",
+                        lzEndpointAddr,
+                        targetChainData
                     )
                 )
             );
         }
-        vm.stopBroadcast();
     }
 
     function deployForTest(
