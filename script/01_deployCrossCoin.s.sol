@@ -33,6 +33,10 @@ contract CrossCoinScript is Script {
                     )
                 )
             );
+            console.log(
+                "Cross Chain proxy deployed at",
+                proxyAddr
+            );
         } else {
             deploymentNetwork = vm.envString(
                 "DEPLOYMENT_NETWORK"
@@ -55,7 +59,7 @@ contract CrossCoinScript is Script {
                 string.concat("PROXY_ADMIN_ADDR_", deploymentNetwork)
             );
 
-            vm.broadcast();
+            vm.startBroadcast();
             address implementationAddr = address(new CrossCoin());
 
             console.log(
@@ -70,13 +74,13 @@ contract CrossCoinScript is Script {
                 string.concat("LZ_ENDPOINT_", deploymentNetwork)
             );
 
-            uint256 chainId1 = vm.envUint(
+            uint16 chainId1 = uint16(vm.envUint(
                 string.concat("CHAIN_ID_", targetChain1)
-            );
+            ));
 
-            uint256 chainId2 = vm.envUint(
+            uint16 chainId2 = uint16(vm.envUint(
                 string.concat("CHAIN_ID_", targetChain2)
-            );
+            ));
 
             // bytes memory targetChainData = abi.encodePacked([chainId1, chainId2]);
             bytes memory targetChainData = abi.encode(chainId1, chainId2);
@@ -93,6 +97,10 @@ contract CrossCoinScript is Script {
                         targetChainData
                     )
                 )
+            );
+            console.log(
+                "Cross Chain proxy deployed at",
+                proxyAddr
             );
         }
     }

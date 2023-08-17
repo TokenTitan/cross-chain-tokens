@@ -2,8 +2,8 @@
 pragma solidity 0.8.13;
 
 // Package Imports
-import { Initializable } from "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
-import { OwnableUpgradeable } from "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import { Initializable } from "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
+import { OwnableUpgradeable } from "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 
 // Interfaces
 import { ILayerZeroReceiverUpgradeable } from "../interfaces/ILayerZeroReceiverUpgradeable.sol";
@@ -13,10 +13,12 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
     uint256 constant public DEFAULT_PAYLOAD_SIZE_LIMIT = 10000;
 
     ILayerZeroEndpointUpgradeable internal _lzEndpoint;
-    uint256[2] internal _dstChainIds;
+    uint16[2] internal _dstChainIds;
 
-    mapping(uint256 => bytes) public trustedRemoteLookup;
-    mapping(uint256 => uint256) public payloadSizeLimitLookup;
+    mapping(uint16 => bytes) public trustedRemoteLookup;
+    mapping(uint16 => uint256) public payloadSizeLimitLookup;
+
+    event SetTrustedRemoteAddress(uint16 _remoteChainId, bytes _remoteAddress);
 
     /**
      * @dev Sets the values for {lzEndpoint} and {dstChainIds}.
@@ -39,7 +41,7 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
         //     _dstChainIds[_index] = dstChainIds[_index]; // TODO: should use bitwise 
         // }
 
-        (uint256 chainId1, uint256 chainId2) = abi.decode(targetChainData, (uint256, uint256));
+        (uint16 chainId1, uint16 chainId2) = abi.decode(targetChainData, (uint16, uint16));
 
         //TODO fix encode and decode for using array
         _dstChainIds[0] = chainId1;
@@ -62,6 +64,16 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
         require(_srcAddress.length == trustedRemote.length && trustedRemote.length > 0 && keccak256(_srcAddress) == keccak256(trustedRemote), "LzApp: invalid source sending contract");
 
         _lzReceive(_srcChainId, _srcAddress, _nonce, _payload);
+    }
+
+    /**
+     * @dev authorise remote chain address corresponding to each chain Id
+     * @param _remoteChainId chain id of the target chain
+     * @param _remoteAddress address of the contract on target chain
+     */
+    function setTrustedRemoteAddress(uint16 _remoteChainId, bytes calldata _remoteAddress) external onlyOwner {
+        trustedRemoteLookup[_remoteChainId] = abi.encodePacked(_remoteAddress, address(this));
+        emit SetTrustedRemoteAddress(_remoteChainId, _remoteAddress);
     }
 
     /**
@@ -93,7 +105,7 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
      */
     function _lzSend(bytes memory _payload, address payable _refundAddress, address _zroPaymentAddress, bytes memory _adapterParams, uint _nativeFee) internal virtual {
         uint256 noOfChains = _dstChainIds.length;
-        uint256[2] memory dstChainIds = _dstChainIds;
+        uint16[2] memory dstChainIds = _dstChainIds;
         for(uint256 _index = 0; _index < noOfChains; _index++) {
             bytes memory trustedRemote = trustedRemoteLookup[dstChainIds[_index]];
             require(trustedRemote.length != 0, "LzApp: destination chain is not a trusted source");
@@ -102,7 +114,7 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
         }
     }
 
-    function _checkPayloadSize(uint256 _dstChainId, uint _payloadSize) internal view virtual {
+    function _checkPayloadSize(uint16 _dstChainId, uint _payloadSize) internal view virtual {
         uint payloadSizeLimit = payloadSizeLimitLookup[_dstChainId];
         if (payloadSizeLimit == 0) { // use default if not set
             payloadSizeLimit = DEFAULT_PAYLOAD_SIZE_LIMIT;

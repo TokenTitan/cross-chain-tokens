@@ -3,9 +3,9 @@
 
 pragma solidity ^0.8.0;
 
-import { IERC20Upgradeable } from "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
-import { IERC20MetadataUpgradeable } from "openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
-import { ContextUpgradeable } from "openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol";
+import { IERC20Upgradeable } from "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
+import { IERC20MetadataUpgradeable } from "lib/openzeppelin-contracts-upgradeable/contracts/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import { ContextUpgradeable } from "lib/openzeppelin-contracts-upgradeable/contracts/utils/ContextUpgradeable.sol";
 import { Initializable } from "lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 
 /**
