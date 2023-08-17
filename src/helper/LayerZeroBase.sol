@@ -86,12 +86,11 @@ abstract contract LayerZeroBase is OwnableUpgradeable, ILayerZeroReceiverUpgrade
     function _lzReceive(uint16 _srcChainId, bytes memory _srcAddress, uint64 _nonce, bytes memory _payload) internal virtual;
 
     /**
-     * @dev function to make a call to layerzero endpoint on the current chain
-     * @param _payload message to be transffered
-     * @param _refundAddress address of the user to recieve refund // TODO
-     * @param _zroPaymentAddress zero payment address // TODO
-     * @param _adapterParams adapter params // TODO
-     * @param _nativeFee native fee // TODO
+    // @notice send a LayerZero message to the specified address at a LayerZero endpoint.
+    // @param _payload - a custom bytes payload to send to the destination contract
+    // @param _refundAddress - if the source transaction is cheaper than the amount of value passed, refund the additional amount to this address
+    // @param _zroPaymentAddress - the address of the ZRO token holder who would pay for the transaction
+    // @param _adapterParams - parameters for custom functionality. e.g. receive airdropped native gas from the relayer on destination
      */
     function _lzSend(bytes memory _payload, address payable _refundAddress, address _zroPaymentAddress, bytes memory _adapterParams, uint _nativeFee) internal virtual {
         uint256 noOfChains = _dstChainIds.length;

@@ -105,7 +105,7 @@ contract CrossCoinScript is Script {
         proxyAdminAddr = _proxyAdmin;
         lzEndpointAddr = _lzEndpointAddr;
         chainId1 = _chainId1;
-        chainId1 = _chainId2;
+        chainId2 = _chainId2;
 
         run();
 
