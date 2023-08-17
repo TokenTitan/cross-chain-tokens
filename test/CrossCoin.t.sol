@@ -89,10 +89,25 @@ contract CrossCoinTest is Test {
         console.log("Done.");
     }
 
-    function testMint() public {
+    function testTotalSupplyAcrossChains() public {
         crossCoin1.mint{value: 1 ether}(MOCK_USER_1, 100e18);
         assertTrue(crossCoin1.totalSupply() == 100e18);
         assertTrue(crossCoin2.totalSupply() == 100e18);
         assertTrue(crossCoin3.totalSupply() == 100e18);
+
+        crossCoin2.mint{value: 1 ether}(MOCK_USER_2, 100e18);
+        assertTrue(crossCoin1.totalSupply() == 200e18);
+        assertTrue(crossCoin2.totalSupply() == 200e18);
+        assertTrue(crossCoin3.totalSupply() == 200e18);
+
+        crossCoin1.burn{value: 1 ether}(MOCK_USER_1, 100e18);
+        assertTrue(crossCoin1.totalSupply() == 100e18);
+        assertTrue(crossCoin2.totalSupply() == 100e18);
+        assertTrue(crossCoin3.totalSupply() == 100e18);
+
+        crossCoin2.burn{value: 1 ether}(MOCK_USER_1, 100e18);
+        assertTrue(crossCoin1.totalSupply() == 0);
+        assertTrue(crossCoin2.totalSupply() == 0);
+        assertTrue(crossCoin3.totalSupply() == 0);
     }
 }
