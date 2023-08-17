@@ -94,7 +94,7 @@ contract CrossCoinHLScript is Script {
         );
 
         console.log(
-            "Cross Chain proxy deployed at",
+            "Cross Chain proxy deployed with Hyperlane at",
             proxyAddr
         );
         CrossCoinHL(proxyAddr).transferOwnership(msg.sender);

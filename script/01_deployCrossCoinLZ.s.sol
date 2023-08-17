@@ -87,7 +87,7 @@ contract CrossCoinLZScript is Script {
         );
 
         console.log(
-            "Cross Chain proxy deployed at",
+            "Cross Chain proxy deployed with Layerzero at",
             proxyAddr
         );
         CrossCoinLZ(proxyAddr).transferOwnership(msg.sender);
