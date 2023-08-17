@@ -1,16 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import "openzeppelin-contracts-upgradeable";
+import "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
 
-contract CrossCoin {
-    uint256 public number;
+contract CrossCoin is ERC20Upgradeable {
 
-    function setNumber(uint256 newNumber) public {
-        number = newNumber;
-    }
-
-    function increment() public {
-        number++;
-    }
 }
