@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import {ERC20Upgradeable} from "openzeppelin-contracts-upgradeable/contracts/token/ERC20/ERC20Upgradeable.sol";
-import {LayerZeroBase} from "./helper/LayerZeroBase.sol";
+import { ERC20Upgradeable } from "./helper/ERC20Upgradeable.sol";
+import { LayerZeroBase } from "./helper/LayerZeroBase.sol";
 
 contract CrossCoin is ERC20Upgradeable, LayerZeroBase {
+    error InvalidEvent();
+
     function initialize(
         string memory _name,
         string memory _symbol,
@@ -24,11 +26,11 @@ contract CrossCoin is ERC20Upgradeable, LayerZeroBase {
     ) internal override {
         (address _from, address _to, uint256 _amount) = abi.decode(_payload, (address, address, uint256));
         if (_from == address(0)) {
-            _mint(_to, _amount);
+            _totalSupply = _totalSupply + _amount;
         } else if (_to == address(0)) {
-            _burn(_to, _amount);
+            _totalSupply = _totalSupply - _amount;
         } else {
-            _transfer(_from, _to, _amount);
+            revert InvalidEvent();
         }
     }
 
