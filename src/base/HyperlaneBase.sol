@@ -3,7 +3,7 @@ pragma solidity 0.8.13;
 
 // Package Imports
 import { Strings } from "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
-import { OwnableUpgradeable } from "lib/openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import { MultilayerBase } from "./MultilayerBase.sol";
 
 interface IMailbox {
     function localDomain() external view returns (uint32);
@@ -24,8 +24,7 @@ interface IMailbox {
     function latestCheckpoint() external view returns (bytes32, uint32);
 }
 
-abstract contract HyperLaneBase is OwnableUpgradeable {
-    IMailbox public mailbox;
+abstract contract HyperlaneBase is MultilayerBase {
     uint256 private mintCost;
 
     event Executed(address indexed _from, bytes _value);
@@ -33,9 +32,11 @@ abstract contract HyperLaneBase is OwnableUpgradeable {
     error InsufficientFundsProvidedForMint();
 
     function __hyperlaneInit(
-        address _mailbox, uint _mintCost
+        address _mailbox,
+        uint256 _mintCost,
+        uint16[2] memory _dstChainIds
     ) internal initializer {
-        mailbox = IMailbox(_mailbox);
+        __multilayerInit(_mailbox, _dstChainIds);
         mintCost = _mintCost;
     }
 
@@ -48,10 +49,13 @@ abstract contract HyperLaneBase is OwnableUpgradeable {
         _processRecieve(_payload);
     }
 
-    // To send message to Hyperlane
-    function _sendTransferEvent(
-        uint32 _destinationDomain,
-        address _recipient,
+    /**
+     * @dev to send message to Hyperlane
+     * @param _from address of the token sender
+     * @param _to address of the token reciever
+     * @param _amount the number of tokens being transferred
+    */
+    function _hlSend(
         address _from,
         address _to,
         uint256 _amount
@@ -60,16 +64,26 @@ abstract contract HyperLaneBase is OwnableUpgradeable {
             revert InsufficientFundsProvidedForMint();
         }
         bytes memory _message = abi.encode(_from, _to, _amount);
-        mailbox.dispatch(_destinationDomain, _addressToBytes32(_recipient), _message);
+        uint256 noOfChains = dstChainIds.length;
+        uint16[2] memory dstChainIds = dstChainIds;
+        for(uint256 _index = 0; _index < noOfChains; _index++) {
+            uint16 _destinationDomain = dstChainIds[_index];
+            bytes memory _path = trustedRemoteLookup[_destinationDomain];
+            address _recipient;
+            assembly {
+                _recipient := mload(add(_path, 20))
+            }
+            bytes32 addressInBytes32 = _addressToBytes32(_recipient);
+            IMailbox(chainEndpoint)
+                .dispatch(
+                    uint32(_destinationDomain),
+                    addressInBytes32,
+                    _message
+                );
+        }
     }
 
     function _addressToBytes32(address _addr) private pure returns (bytes32) {
         return bytes32(uint256(uint160(_addr)));
     }
-
-    /**
-     * @dev abstract function for the importing contract to implement functionality accordingly
-     * @param _payload message added to the source transaction
-     */
-    function _processRecieve(bytes memory _payload) internal virtual;
 }

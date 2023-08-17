@@ -4,14 +4,14 @@ pragma solidity 0.8.13;
 import "forge-std/console.sol";
 
 import { Test } from "forge-std/Test.sol";
-import { CrossCoin } from "../src/CrossCoin.sol";
+import { CrossCoinLZ } from "../src/CrossCoinLZ.sol";
 import { LZEndpointMock } from "src/mocks/LZEndpointMock.sol";
 
 // deployment scripts
 import { ProxyAdminScript } from "script/00_deployProxyAdmin.s.sol";
-import { CrossCoinScript } from "script/01_deployCrossCoin.s.sol";
+import { CrossCoinLZScript } from "script/01_deployCrossCoinLZ.s.sol";
 
-contract CrossCoinTest is Test {
+contract CrossCoinLZTest is Test {
     address public constant MOCK_USER_1 = address(1);
     address public constant MOCK_USER_2 = address(2);
 
@@ -19,9 +19,9 @@ contract CrossCoinTest is Test {
     uint16 public constant CHAIN_ID_2 = 456;
     uint16 public constant CHAIN_ID_3 = 789;
 
-    CrossCoin public crossCoin1;
-    CrossCoin public crossCoin2;
-    CrossCoin public crossCoin3;
+    CrossCoinLZ public crossCoin1;
+    CrossCoinLZ public crossCoin2;
+    CrossCoinLZ public crossCoin3;
 
     LZEndpointMock public lzEndPoint1;
     LZEndpointMock public lzEndPoint2;
@@ -38,9 +38,9 @@ contract CrossCoinTest is Test {
         lzEndPoint3 = new LZEndpointMock(CHAIN_ID_3);
         console.log("Deployed lz endpoint for chain 3 at: ", address(lzEndPoint3));
 
-        CrossCoinScript crossCoinScript = new CrossCoinScript();
+        CrossCoinLZScript crossCoinScript = new CrossCoinLZScript();
 
-        crossCoin1 = CrossCoin(
+        crossCoin1 = CrossCoinLZ(
             crossCoinScript.deployForTest(
                 proxyAdminAddr,
                 address(lzEndPoint1),
@@ -49,7 +49,7 @@ contract CrossCoinTest is Test {
             )
         );
 
-        crossCoin2 = CrossCoin(
+        crossCoin2 = CrossCoinLZ(
             crossCoinScript.deployForTest(
                 proxyAdminAddr,
                 address(lzEndPoint2),
@@ -58,7 +58,7 @@ contract CrossCoinTest is Test {
             )
         );
 
-        crossCoin3 = CrossCoin(
+        crossCoin3 = CrossCoinLZ(
             crossCoinScript.deployForTest(
                 proxyAdminAddr,
                 address(lzEndPoint3),

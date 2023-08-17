@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.13;
 
-import { ERC20Upgradeable } from "./helper/ERC20Upgradeable.sol";
-import { LayerZeroBase } from "./helper/LayerZeroBase.sol";
+import { ERC20Upgradeable } from "./base/ERC20Upgradeable.sol";
+import { LayerZeroBase } from "./base/LayerZeroBase.sol";
 import "forge-std/console.sol";
 
-contract CrossCoin is ERC20Upgradeable, LayerZeroBase {
-    error InvalidEvent();
-
+contract CrossCoinLZ is ERC20Upgradeable, LayerZeroBase {
     function initialize(
         string memory _name,
         string memory _symbol,
@@ -17,7 +15,7 @@ contract CrossCoin is ERC20Upgradeable, LayerZeroBase {
     ) {
         __Ownable_init();
         __ERC20_init(_name, _symbol);
-        __layerZeroInit(_lzEndpoint, dstChainIds);
+        __multilayerInit(_lzEndpoint, dstChainIds);
     }
 
     function _processRecieve(bytes memory _payload) internal override {

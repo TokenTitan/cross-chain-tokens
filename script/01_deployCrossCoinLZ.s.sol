@@ -4,10 +4,10 @@ pragma solidity ^0.8.13;
 import "forge-std/Script.sol";
 import "forge-std/console.sol";
 
-import { CrossCoin } from "../src/CrossCoin.sol";
+import { CrossCoinLZ } from "../src/CrossCoinLZ.sol";
 import { TransparentUpgradeableProxy } from "openzeppelin-contracts/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
-contract CrossCoinScript is Script {
+contract CrossCoinLZScript is Script {
     string private deploymentNetwork;
 
     address private proxyAdminAddr;
@@ -64,7 +64,7 @@ contract CrossCoinScript is Script {
         vm.startBroadcast();
 
         // deploy implementation contract
-        address implementationAddr = address(new CrossCoin());
+        address implementationAddr = address(new CrossCoinLZ());
 
         console.log(
             "Implementation contract deployed at",
@@ -77,7 +77,7 @@ contract CrossCoinScript is Script {
                 implementationAddr,
                 proxyAdminAddr,
                 abi.encodeWithSelector(
-                    CrossCoin(address(0)).initialize.selector,
+                    CrossCoinLZ(address(0)).initialize.selector,
                     "CrossCoin",
                     "CC",
                     lzEndpointAddr,
@@ -90,7 +90,7 @@ contract CrossCoinScript is Script {
             "Cross Chain proxy deployed at",
             proxyAddr
         );
-        CrossCoin(proxyAddr).transferOwnership(msg.sender);
+        CrossCoinLZ(proxyAddr).transferOwnership(msg.sender);
         vm.stopBroadcast();
     }
 

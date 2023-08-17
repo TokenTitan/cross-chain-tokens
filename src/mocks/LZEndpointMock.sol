@@ -6,6 +6,8 @@ pragma abicoder v2;
 import "../interfaces/ILayerZeroReceiverUpgradeable.sol";
 import "../interfaces/ILayerZeroEndpointUpgradeable.sol";
 
+import "forge-std/console.sol";
+
 library LzLib {
     // LayerZero communication
     struct CallParams {
@@ -186,7 +188,7 @@ contract LZEndpointMock {
     }
 
     // ------------------------------ ILayerZeroEndpoint Functions ------------------------------
-    function send(uint16 _chainId, bytes memory _path, bytes calldata _payload, address payable _refundAddress, address _zroPaymentAddress, bytes memory _adapterParams) external payable sendNonReentrant {
+    function send(uint16 _chainId, bytes memory _path, bytes calldata _payload, address payable /*_refundAddress*/, address _zroPaymentAddress, bytes memory _adapterParams) external payable sendNonReentrant {
         require(_path.length == 40, "LayerZeroMock: incorrect remote address size"); // only support evm chains
 
         address dstAddr;
@@ -204,12 +206,12 @@ contract LZEndpointMock {
 
         uint64 nonce = ++outboundNonce[_chainId][msg.sender];
 
-        // refund if they send too much
-        uint amount = msg.value - nativeFee;
-        if (amount > 0) {
-            (bool success, ) = _refundAddress.call{value: amount}("");
-            require(success, "LayerZeroMock: failed to refund");
-        }
+        // // refund if they send too much
+        // uint amount = msg.value - nativeFee;
+        // if (amount > 0) {
+        //     (bool success, ) = _refundAddress.call{value: amount}("");
+        //     require(success, "LayerZeroMock: failed to refund");
+        // }
 
         // Mock the process of receiving msg on dst chain
         // Mock the relayer paying the dstNativeAddr the amount of extra native token
