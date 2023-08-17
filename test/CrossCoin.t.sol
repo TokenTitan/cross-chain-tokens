@@ -32,8 +32,11 @@ contract CrossCoinTest is Test {
         address proxyAdminAddr = proxyAdminScript.deployForTest();
 
         lzEndPoint1 = new LZEndpointMock(CHAIN_ID_1);
+        console.log("Deployed lz endpoint for chain 1 at: ", address(lzEndPoint1));
         lzEndPoint2 = new LZEndpointMock(CHAIN_ID_2);
+        console.log("Deployed lz endpoint for chain 2 at: ", address(lzEndPoint2));
         lzEndPoint3 = new LZEndpointMock(CHAIN_ID_3);
+        console.log("Deployed lz endpoint for chain 3 at: ", address(lzEndPoint3));
 
         CrossCoinScript crossCoinScript = new CrossCoinScript();
 
@@ -90,7 +93,8 @@ contract CrossCoinTest is Test {
     }
 
     function testTotalSupplyAcrossChains() public {
-        crossCoin1.mint{value: 1 ether}(MOCK_USER_1, 100e18);
+        vm.deal(address(crossCoin1), 1 ether);
+        crossCoin1.mint{value: 0.1 ether}(MOCK_USER_1, 100e18);
         assertTrue(crossCoin1.totalSupply() == 100e18);
         assertTrue(crossCoin2.totalSupply() == 100e18);
         assertTrue(crossCoin3.totalSupply() == 100e18);
